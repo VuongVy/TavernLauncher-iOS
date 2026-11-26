@@ -185,12 +185,18 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
         launchJar = YES;
     }
 
-    // Ensure gameDir and logs/ exist and align process CWD with -Duser.dir.
+    // Ensure gameDir and logs/ exist, resolve canonical /private/var/... path,
+    // and align process CWD with -Duser.dir.
     // Java NIO (e.g. Cobblemon Showdown unbundler) and Log4j resolve relative
     // paths via OS CWD; without chdir(gameDir), ShowdownThread throws
     // NoSuchFileException on showdown/showdown.zip and deadlocks Render thread.
     [fm createDirectoryAtPath:[gameDir stringByAppendingPathComponent:@"logs"]
         withIntermediateDirectories:YES attributes:nil error:nil];
+    char *resolvedGameDir = realpath(gameDir.UTF8String, NULL);
+    if (resolvedGameDir) {
+        gameDir = @(resolvedGameDir);
+        free(resolvedGameDir);
+    }
     if (![fm changeCurrentDirectoryPath:gameDir]) {
         NSLog(@"[JavaLauncher] Warning: failed to chdir to %@", gameDir);
     } else {

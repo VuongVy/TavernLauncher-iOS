@@ -1,2 +1,4 @@
 Agent-Class: net.kdt.patchjna.PatchJNAAgent
 Premain-Class: net.kdt.patchjna.PatchJNAAgent
+Can-Retransform-Classes: true
+
