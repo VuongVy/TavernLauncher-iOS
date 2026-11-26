@@ -274,6 +274,7 @@
     NSString *name = [[modDetail[@"title"] lowercaseString] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
     name = [name stringByReplacingOccurrencesOfString:@" " withString:@"_"];
     NSString *packagePath = [NSTemporaryDirectory() stringByAppendingFormat:@"/%@.zip", name];
+    [NSFileManager.defaultManager removeItemAtPath:packagePath error:nil];
 
     NSURLSessionDownloadTask *task = [self createDownloadTask:url size:size sha:sha altName:nil toPath:packagePath success:^{
         NSString *path = [NSString stringWithFormat:@"%s/custom_gamedir/%@", getenv("GAME_DIR"), name];
@@ -314,12 +315,12 @@
 
 // Check if the account has permission to download
 - (BOOL)checkAccessWithDialog:(BOOL)show {
-    // for now
-    BOOL accessible = [BaseAuthenticator.current.authData[@"username"] hasPrefix:@"Demo."] || BaseAuthenticator.current.authData[@"xboxGamertag"] != nil;
+    // TavernCraft supports both Local/Offline accounts (EasyAuth server) and Microsoft accounts
+    BOOL accessible = BaseAuthenticator.current != nil;
     if (!accessible) {
         [self.progress cancel];
         if (show) {
-            [self finishDownloadWithErrorString:@"Minecraft can't be legally installed when logged in with a local account. Please switch to an online account to continue."];
+            [self finishDownloadWithErrorString:@"Vui lòng chọn hoặc tạo tài khoản trước khi tải game."];
         }
     }
     return accessible;

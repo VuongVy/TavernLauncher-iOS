@@ -223,150 +223,154 @@ BOOL convertLayoutIfNecessary(NSMutableDictionary* dict) {
     return YES;
 }
 
-void generateAndSaveDefaultControl() {
-    NSString *defaultPath = [NSString stringWithFormat:@"%s/controlmap/default.json", getenv("AME_HOME")];
-    if ([NSFileManager.defaultManager fileExistsAtPath:defaultPath]) {
-        return;
-    }
+static NSMutableDictionary* createTavernButton(
+    NSString* name, int keycode,
+    NSString* dynamicX, NSString* dynamicY,
+    CGFloat width, CGFloat height,
+    int bgColor, int strokeColor, CGFloat cornerRadius,
+    BOOL isToggle, BOOL isSwipeable, BOOL displayInGame, BOOL displayInMenu
+) {
+    int keys[4] = {keycode, 0, 0, 0};
+    NSMutableDictionary *dict = createDefaultControlButton(
+        name, keys, dynamicX, dynamicY, width, height,
+        isToggle, isSwipeable, displayInGame, displayInMenu, 1.2
+    );
+    dict[@"bgColor"] = @(bgColor);
+    dict[@"strokeColor"] = @(strokeColor);
+    dict[@"cornerRadius"] = @(cornerRadius);
+    dict[@"opacity"] = @(0.92);
+    return dict;
+}
 
-    // Generate the built-in default control layout.
+static NSMutableDictionary* buildTavernCraftCobblemonLayout() {
+    // 1-to-1 port of TavernCraft Android cobblemon-controls.json (v2.8.4)
+    // Clears top-left Xaero Minimap & Party HUD; exposes Menu E (Kho), Balo (B), POKE (C), THA (R), Up/Down, etc.
+    const int kBorder = (int)0x66FFFFFF;
+    const int kDark   = (int)0x99000000;
+    const int kAmber  = (int)0xD9F59E0B;
+    const int kEmrld  = (int)0xD910B981;
+    const int kCyan   = (int)0xCC06B6D4;
+    const int kRose   = (int)0xCCF43F5E;
+    const int kPurpl  = (int)0xCCA855F7;
+    const int kSky    = (int)0xCC0EA5E9;
+    const int kIndigo = (int)0xCC6366F1;
+    const int kJump   = (int)0x80FFFFFF;
+
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     dict[@"version"] = @(8);
     dict[@"scaledAt"] = @(100);
     dict[@"mControlDataList"] = [NSMutableArray new];
     dict[@"mDrawerDataList"] = [NSMutableArray new];
     dict[@"mJoystickDataList"] = [NSMutableArray new];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Jump",
-        (int[]){GLFW_KEY_SPACE,0,0,0},
-        @"0.94878495 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin}",
-        @"0.31131014 * ${screen_height} + (px(69.6) /100.0 * ${preferred_scale}) + ${margin}",
-        69.6, 69.6, NO, NO, YES, NO, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Runtime\nMenu",
-        (int[]){SPECIALBTN_MENU,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin}",
-        @"0.0 * ${screen_height}",
-        104.8, 39.2, NO, NO, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Shift",
-        (int[]){GLFW_KEY_LEFT_SHIFT,0,0,0},
-        @"0.94878495 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin}",
-        @"0.31131014 * ${screen_height}",
-        69.6, 69.6, YES, NO, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Right\nClick",
-        (int[]){SPECIALBTN_MOUSESEC,0,0,0},
-        @"0.8756154 * ${screen_width} - ${width}",
-        @"0.8178498 * ${screen_height} - ${height}",
-        69.6, 69.6, NO, YES, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Left\nClick",
-        (int[]){SPECIALBTN_MOUSEPRI,0,0,0},
-        @"0.7756397 * ${screen_width} - ${width}",
-        @"0.8224885 * ${screen_height} - ${height}",
-        69.6, 69.6, NO, YES, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Middle\nClick",
-        (int[]){SPECIALBTN_MOUSEMID,0,0,0},
-        @"0.83548373 * ${screen_width} - ${width}",
-        @"0.67798775 * ${screen_height} - ${height}",
-        69.6, 69.6, NO, YES, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Sprint",
-        (int[]){GLFW_KEY_LEFT_CONTROL,0,0,0},
-        @"0.94878495 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-        @"0.31131014 * ${screen_height}",
-        69.6, 69.6, YES, NO, YES, NO, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Hide\nGUI",
-        (int[]){SPECIALBTN_TOGGLECTRL,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin}",
-        @"0.0 * ${screen_height}",
-        69.6, 40.0, NO, NO, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Pause",
-        (int[]){GLFW_KEY_ESCAPE,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-        @"0.0 * ${screen_height}",
-        104.8, 39.2, NO, NO, YES, NO, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Inventory",
-        (int[]){GLFW_KEY_E,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - ${width} - ${margin}",
-        @"0.0 * ${screen_height}",
-        100.0, 40.0, NO, NO, YES, NO, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Exit\nMenu",
-        (int[]){GLFW_KEY_ESCAPE,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-        @"0.0 * ${screen_height}",
-        104.8, 39.2, NO, NO, NO, YES, 0
-    )];
 
-    NSMutableDictionary *drawer = [NSMutableDictionary new];
-    drawer[@"orientation"] = @"FREE";
-    drawer[@"properties"] = createDefaultControlButton(@"More",
-        (int[]){0,0,0,0},
-        @"0.0 * ${screen_width}",
-        @"0.0 * ${screen_height}",
-        96.0, 40.0, NO, NO, YES, YES, 1.5
-    );
-    drawer[@"buttonProperties"] = [NSMutableArray arrayWithArray:@[
-        createDefaultControlButton(@"Third\nperson",
-            (int[]){GLFW_KEY_F5,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Debug\nMenu",
-            (int[]){GLFW_KEY_F3,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Mouse\nToggle",
-            (int[]){SPECIALBTN_VIRTUALMOUSE,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Chat",
-            (int[]){GLFW_KEY_T,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Keyboard",
-            (int[]){SPECIALBTN_KEYBOARD,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} - (px(96.0) / 100.0 * ${preferred_scale}) - ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Player\nList",
-            (int[]){GLFW_KEY_TAB,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - ${height} - ${margin}",
-            96.0, 40.0, YES, NO, YES, YES, 0
-        )
-    ]];
-    [dict[@"mDrawerDataList"] addObject:drawer];
+    NSMutableArray *btns = dict[@"mControlDataList"];
 
-    NSMutableDictionary *joystick = createDefaultControlButton(@"button",
+    // --- Top Utility Bar (clears Xaero Minimap on top-left) ---
+    [btns addObject:createTavernButton(@"Menu", SPECIALBTN_MENU,
+        @"0.175 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        36, 28, kDark, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"Esc", GLFW_KEY_ESCAPE,
+        @"0.235 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        36, 28, kDark, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"Chat", GLFW_KEY_T,
+        @"0.300 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        40, 28, kDark, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"IME", SPECIALBTN_KEYBOARD,
+        @"0.365 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        36, 28, kIndigo, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"Map", GLFW_KEY_M,
+        @"0.430 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        38, 28, kSky, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"F3", GLFW_KEY_F3,
+        @"0.490 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        32, 28, kDark, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"F5", GLFW_KEY_F5,
+        @"0.545 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        32, 28, kDark, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"Tab", GLFW_KEY_TAB,
+        @"0.605 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        36, 28, kDark, kBorder, 25, YES, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"Balo", GLFW_KEY_B,
+        @"0.680 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        40, 28, kAmber, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"Kho", GLFW_KEY_E,
+        @"0.750 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        38, 28, kDark, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"F", GLFW_KEY_F,
+        @"0.810 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        30, 28, kDark, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"Q", GLFW_KEY_Q,
+        @"0.860 * ${screen_width} - 0.5 * ${width}", @"0.02 * ${screen_height}",
+        30, 28, kDark, kBorder, 25, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"GUI", SPECIALBTN_TOGGLECTRL,
+        @"0.985 * ${screen_width} - ${width}", @"0.02 * ${screen_height}",
+        40, 28, kPurpl, kBorder, 25, NO, NO, YES, YES)];
+
+    // --- Cobblemon Cluster (middle-left, clears Party HUD & Joystick) ---
+    [btns addObject:createTavernButton(@"POKE (C)", GLFW_KEY_C,
+        @"0.145 * ${screen_width} - 0.5 * ${width}", @"0.380 * ${screen_height} - 0.5 * ${height}",
+        62, 36, kAmber, kBorder, 30, NO, NO, YES, NO)];
+    [btns addObject:createTavernButton(@"THẢ (R)", GLFW_KEY_R,
+        @"0.255 * ${screen_width} - 0.5 * ${width}", @"0.380 * ${screen_height} - 0.5 * ${height}",
+        60, 36, kEmrld, kBorder, 30, NO, NO, YES, NO)];
+    [btns addObject:createTavernButton(@"▲", GLFW_KEY_DPAD_UP,
+        @"0.352 * ${screen_width} - 0.5 * ${width}", @"0.355 * ${screen_height} - 0.5 * ${height}",
+        32, 24, kDark, kBorder, 25, NO, NO, YES, NO)];
+    [btns addObject:createTavernButton(@"▼", GLFW_KEY_DPAD_DOWN,
+        @"0.352 * ${screen_width} - 0.5 * ${width}", @"0.440 * ${screen_height} - 0.5 * ${height}",
+        32, 24, kDark, kBorder, 25, NO, NO, YES, NO)];
+    [btns addObject:createTavernButton(@"Alt", GLFW_KEY_LEFT_ALT,
+        @"0.275 * ${screen_width} - 0.5 * ${width}", @"0.730 * ${screen_height} - 0.5 * ${height}",
+        38, 30, kDark, kBorder, 25, NO, NO, YES, NO)];
+    [btns addObject:createTavernButton(@"Cúi", GLFW_KEY_LEFT_SHIFT,
+        @"0.275 * ${screen_width} - 0.5 * ${width}", @"0.860 * ${screen_height} - 0.5 * ${height}",
+        44, 34, kDark, kBorder, 30, YES, NO, YES, NO)];
+
+    // --- Right Action Cluster ---
+    [btns addObject:createTavernButton(@"NHẢY", GLFW_KEY_SPACE,
+        @"0.970 * ${screen_width} - ${width}", @"0.560 * ${screen_height} - 0.5 * ${height}",
+        58, 42, kJump, kBorder, 45, NO, NO, YES, YES)];
+    [btns addObject:createTavernButton(@"TƯƠNG\nTÁC", SPECIALBTN_MOUSESEC,
+        @"0.815 * ${screen_width} - 0.5 * ${width}", @"0.800 * ${screen_height} - 0.5 * ${height}",
+        72, 54, kCyan, kBorder, 45, NO, YES, YES, YES)];
+    [btns addObject:createTavernButton(@"ĐÁNH", SPECIALBTN_MOUSEPRI,
+        @"0.970 * ${screen_width} - ${width}", @"0.800 * ${screen_height} - 0.5 * ${height}",
+        68, 54, kRose, kBorder, 45, NO, YES, YES, YES)];
+
+    // --- Left Movement Joystick (forward sprint-lock enabled) ---
+    NSMutableDictionary *joystick = createDefaultControlButton(@"move",
         (int[]){0,0,0,0},
-        @"0.02326631 * ${screen_width}",
-        @"0.9753418 * ${screen_height} - ${height}",
-        204.8, 204.8, NO, NO, YES, NO, 0
+        @"0.030 * ${screen_width}",
+        @"0.960 * ${screen_height} - ${height}",
+        128.0, 128.0, NO, NO, YES, NO, 0
     );
     joystick[@"absolute"] = @NO;
-    joystick[@"forwardLock"] = @NO;
+    joystick[@"forwardLock"] = @YES;
     joystick[@"cornerRadius"] = @(0);
     joystick[@"strokeColor"] = @(1291845632);
     [dict[@"mJoystickDataList"] addObject:joystick];
 
-    NSOutputStream *os = [[NSOutputStream alloc] initToFileAtPath:defaultPath append:NO];
-    [os open];
-    [NSJSONSerialization writeJSONObject:dict toStream:os options:NSJSONWritingPrettyPrinted error:nil];
-    [os close];
+    return dict;
+}
+
+void generateAndSaveDefaultControl() {
+    NSString *ctrlDir = [NSString stringWithFormat:@"%s/controlmap", getenv("AME_HOME")];
+    [NSFileManager.defaultManager createDirectoryAtPath:ctrlDir withIntermediateDirectories:YES attributes:nil error:nil];
+
+    NSMutableDictionary *tavernLayout = buildTavernCraftCobblemonLayout();
+    NSArray<NSString *> *targets = @[
+        [ctrlDir stringByAppendingPathComponent:@"taverncraft_cobblemon.json"],
+        [ctrlDir stringByAppendingPathComponent:@"default.json"]
+    ];
+    for (NSString *path in targets) {
+        if ([NSFileManager.defaultManager fileExistsAtPath:path]) {
+            continue;
+        }
+        NSOutputStream *os = [[NSOutputStream alloc] initToFileAtPath:path append:NO];
+        [os open];
+        [NSJSONSerialization writeJSONObject:tavernLayout toStream:os options:NSJSONWritingPrettyPrinted error:nil];
+        [os close];
+    }
 }
 
 void generateAndSaveDefaultControlForGamepad() {

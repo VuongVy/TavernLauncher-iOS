@@ -18,7 +18,7 @@
             @"debug_logging": @(!CONFIG_RELEASE),
         }.mutableCopy,
         @"video": @{ // Video & Audio
-            @"renderer": @"auto",
+            @"renderer": @ RENDERER_NAME_MOBILEGLUES,
             @"resolution": @(100),
             @"max_framerate": @YES,
             @"performance_hud": @NO,
@@ -28,7 +28,7 @@
             @"allow_microphone": @NO
         }.mutableCopy,
         @"control": @{
-            @"default_ctrl": @"default.json",
+            @"default_ctrl": @"taverncraft_cobblemon.json",
             @"control_safe_area": UIApplication.sharedApplication ? NSStringFromUIEdgeInsets(getDefaultSafeArea()) : @"",
             @"default_gamepad_ctrl": @"default.json",
             @"controller_type": @"xbox",
@@ -50,18 +50,16 @@
         @"java": @{
             @"java_homes": @{
                 @"0": @{
-                    @"1_16_5_older": @"8",
-                    @"1_17_newer": @"17",
-                    @"execute_jar": @"8"
+                    @"1_16_5_older": @"21",
+                    @"1_17_newer": @"21",
+                    @"execute_jar": @"21"
                 }.mutableCopy,
-                @"8": @"internal",
-                @"17": @"internal",
                 @"21": @"internal"
             }.mutableCopy,
-            @"java_args": @"",
+            @"java_args": @"-XX:+UseStringDeduplication",
             @"env_variables": @"",
-            @"auto_ram": @(!getEntitlementValue(@"com.apple.private.memorystatus")),
-            @"allocated_memory": [NSNumber numberWithFloat:roundf((NSProcessInfo.processInfo.physicalMemory / 1048576) * 0.25)]
+            @"auto_ram": @YES,
+            @"allocated_memory": [NSNumber numberWithFloat:roundf((NSProcessInfo.processInfo.physicalMemory / 1048576) * 0.35)]
         }.mutableCopy,
         @"internal": @{
             @"isolated": @NO,
@@ -89,9 +87,9 @@
             @"debug_show_layout_overlap": @NO
         }.mutableCopy;
         defaults[@"warnings"] = @{
-            @"local_warn": @YES,
+            @"local_warn": @NO,
             @"mem_warn": @YES,
-            @"auto_ram_warn": @YES,
+            @"auto_ram_warn": @NO,
             @"limited_ram_warn": @YES
         }.mutableCopy;
         // TODO: isolate this or add account picker into profile editor(?)

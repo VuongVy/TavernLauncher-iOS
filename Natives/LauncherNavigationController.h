@@ -8,7 +8,10 @@ NSMutableArray<NSDictionary *> *localVersionList, *remoteVersionList;
 @property(nonatomic) UILabel* progressText;
 
 - (void)enterModInstallerWithPath:(NSString *)path hitEnterAfterWindowShown:(BOOL)hitEnter;
+- (void)enterCustomControls;
 - (void)fetchLocalVersionList;
+- (void)reloadProfileList;
+- (void)launchMinecraft:(UIButton *)sender;
 - (void)setInteractionEnabled:(BOOL)enable forDownloading:(BOOL)downloading;
 
 @end

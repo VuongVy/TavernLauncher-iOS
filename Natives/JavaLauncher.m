@@ -209,8 +209,21 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
 
     int allocmem;
     if (getPrefBool(@"java.auto_ram")) {
-        CGFloat autoRatio = getEntitlementValue(@"com.apple.private.memorystatus") ? 0.4 : 0.25;
-        allocmem = roundf((NSProcessInfo.processInfo.physicalMemory >> 20) * autoRatio);
+        int physMB = (int)(NSProcessInfo.processInfo.physicalMemory >> 20);
+        BOOL hasHighMem = getEntitlementValue(@"com.apple.private.memorystatus") ||
+                          getEntitlementValue(@"com.apple.developer.kernel.increased-memory-limit");
+        if (hasHighMem) {
+            if (physMB >= 7500) allocmem = 3072;
+            else if (physMB >= 5500) allocmem = 2560;
+            else allocmem = 1792;
+        } else {
+            CGFloat autoRatio = 0.28;
+            allocmem = MIN(2048, MAX(1280, (int)roundf(physMB * autoRatio)));
+        }
+        // Gracefully step down if iOS contiguous VA space is tighter than target
+        while (allocmem > 1024 && !validateVirtualMemorySpace(allocmem)) {
+            allocmem -= 128;
+        }
     } else {
         allocmem = getPrefInt(@"java.allocated_memory");
     }
@@ -218,9 +231,9 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     if (!validateVirtualMemorySpace(allocmem)) {
         UIKit_returnToSplitView();
         if (getEntitlementValue(@"com.apple.developer.kernel.increased-memory-limit")) {
-            showDialog(localize(@"Error", nil), @"Insufficient contiguous virtual memory space. Lower memory allocation and try again.");
+            showDialog(localize(@"Error", nil), @"Không đủ vùng nhớ RAM khả dụng. Hãy giảm mức RAM trong Cài đặt rồi thử lại.");
         } else {
-            showDialog(localize(@"Error", nil), @"Insufficient contiguous virtual memory space. Increased Memory Limit entitlement is missing, please add it via GetMoreRam app.");
+            showDialog(localize(@"Error", nil), @"Thiếu quyền Increased Memory Limit. Hãy cài thêm ứng dụng GetMoreRam hoặc dùng TrollStore để cấp đủ RAM cho Cobbleverse.");
         }
         return 1;
     }
@@ -236,8 +249,19 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     if (!launchJar) {
         margv[++margc] = "-Djava.system.class.loader=net.kdt.pojavlaunch.PojavClassLoader";
     }
-    margv[++margc] = "-Xms128M";
+    int minHeap = (allocmem >= 1536) ? 512 : 256;
+    margv[++margc] = [NSString stringWithFormat:@"-Xms%dM", minHeap].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Xmx%dM", allocmem].UTF8String;
+    margv[++margc] = "-XX:+UseStringDeduplication";
+    if (!launchJar) {
+        NSString *qpServer = getPrefObject(@"general.taverncraft_quickplay_server");
+        if (qpServer.length == 0) {
+            qpServer = @"tavern.rexon-tech.cloud";
+        }
+        if (![qpServer isEqualToString:@"none"]) {
+            margv[++margc] = [NSString stringWithFormat:@"-Dtaverncraft.quickPlayServer=%@", qpServer].UTF8String;
+        }
+    }
     margv[++margc] = [NSString stringWithFormat:@"-Djava.library.path=%@/Frameworks", NSBundle.mainBundle.bundlePath].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.dir=%@", gameDir].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.home=%s", getenv("AME_HOME")].UTF8String;
@@ -252,8 +276,8 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     const char *glLibName = getenv("RENDERER");
     if (glLibName) {
         if (!strcmp(glLibName, "auto")) {
-            // workaround only applies to 1.20.2+
-            glLibName = RENDERER_NAME_MTL_ANGLE;
+            // MobileGlues is optimal for Minecraft 1.21.1 + Cobblemon on iOS Metal
+            glLibName = RENDERER_NAME_MOBILEGLUES;
         }
         margv[++margc] = [NSString stringWithFormat:@"-Dorg.lwjgl.opengl.libname=%s", glLibName].UTF8String;
     }

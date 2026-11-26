@@ -311,6 +311,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
                 [weakSelf setInteractionEnabled:YES forDownloading:YES];
                 weakSelf.task = nil;
                 weakSelf.progressVC = nil;
+                [NSNotificationCenter.defaultCenter postNotificationName:@"TavernCraftProfileUpdated" object:nil];
             });
         };
         [self.task downloadVersion:object];
@@ -389,6 +390,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
             }];
         } else {
             [self reloadProfileList];
+            [NSNotificationCenter.defaultCenter postNotificationName:@"TavernCraftProfileUpdated" object:nil];
         }
         self.task = nil;
         [self setInteractionEnabled:YES forDownloading:YES];
@@ -409,6 +411,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
                 [weakSelf setInteractionEnabled:YES forDownloading:YES];
                 weakSelf.task = nil;
                 weakSelf.progressVC = nil;
+                [NSNotificationCenter.defaultCenter postNotificationName:@"TavernCraftProfileUpdated" object:nil];
             });
         };
         [self.task downloadModpackFromAPI:notification.object detail:userInfo[@"detail"] atIndex:[userInfo[@"index"] unsignedLongValue]];

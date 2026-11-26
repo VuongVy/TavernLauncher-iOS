@@ -1,6 +1,7 @@
 #import "MinecraftResourceDownloadTask.h"
 #import "ModrinthAPI.h"
 #import "PLProfiles.h"
+#import "utils.h"
 
 @implementation ModrinthAPI
 
@@ -138,15 +139,29 @@
 
     // Create profile
     NSString *tmpIconPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"icon.png"];
-    PLProfiles.current.profiles[indexDict[@"name"]] = @{
+    NSData *iconData = [NSData dataWithContentsOfFile:tmpIconPath];
+    if (!iconData) {
+        NSString *bundleLogo = [NSBundle.mainBundle pathForResource:@"taverncraft_logo" ofType:@"png"];
+        if (bundleLogo) {
+            iconData = [NSData dataWithContentsOfFile:bundleLogo];
+        }
+    }
+    NSMutableDictionary *profileDict = @{
         @"gameDir": [NSString stringWithFormat:@"./custom_gamedir/%@", destPath.lastPathComponent],
         @"name": indexDict[@"name"],
         @"lastVersionId": depInfo[@"id"],
-        @"icon": [NSString stringWithFormat:@"data:image/png;base64,%@",
-            [[NSData dataWithContentsOfFile:tmpIconPath]
-            base64EncodedStringWithOptions:0]]
+        @"renderer": @ RENDERER_NAME_MOBILEGLUES,
+        @"javaVersion": @(21),
     }.mutableCopy;
+    if (iconData) {
+        profileDict[@"icon"] = [NSString stringWithFormat:@"data:image/png;base64,%@", [iconData base64EncodedStringWithOptions:0]];
+    }
+    PLProfiles.current.profiles[indexDict[@"name"]] = profileDict;
     PLProfiles.current.selectedProfileName = indexDict[@"name"];
+    [PLProfiles.current save];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [NSNotificationCenter.defaultCenter postNotificationName:@"TavernCraftProfileUpdated" object:nil];
+    });
 }
 
 @end

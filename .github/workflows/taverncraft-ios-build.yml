@@ -1,0 +1,54 @@
+name: Build TavernCraft Launcher iOS (.ipa / .tipa)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build TavernCraft iOS 2.8.4 (Java 21 + Cobblemon Controls)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout TavernLauncher-iOS (with MobileGlues & submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup JDK 8 (BOOTJDK for Pojav JavaApp bridge)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Install build tools (gmake, cmake, ldid)
+        run: |
+          brew update
+          brew install make cmake ldid
+          which gmake cmake ldid
+          "$JAVA_HOME/bin/javac" -version
+          xcrun --sdk iphoneos --show-sdk-path
+
+      - name: Build TavernCraft iOS (.ipa for SideStore/AltStore + .tipa for TrollStore)
+        env:
+          TAVERN_JRE21_ONLY: "1"
+          RELEASE: "1"
+        run: |
+          export PATH="/opt/homebrew/bin:$PATH"
+          export BOOTJDK="$JAVA_HOME/bin"
+          gmake -j$(sysctl -n hw.ncpu) package PLATFORM=2 BOOTJDK="$BOOTJDK" RELEASE=1 TAVERN_JRE21_ONLY=1
+          gmake -j$(sysctl -n hw.ncpu) package PLATFORM=2 BOOTJDK="$BOOTJDK" RELEASE=1 TAVERN_JRE21_ONLY=1 TROLLSTORE_JIT_ENT=1
+          ls -lh artifacts/
+
+      - name: Upload TavernCraftLauncher iOS (.ipa)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TavernCraftLauncher-iOS-ipa
+          path: artifacts/TavernCraftLauncher-*-ios.ipa
+
+      - name: Upload TavernCraftLauncher iOS TrollStore (.tipa)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TavernCraftLauncher-iOS-trollstore-tipa
+          path: artifacts/TavernCraftLauncher-*-ios-trollstore.tipa

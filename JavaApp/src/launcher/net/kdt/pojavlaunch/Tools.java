@@ -161,6 +161,11 @@ public final class Tools {
                 strList.add(arg);
             }
         }
+        String quickPlay = System.getProperty("taverncraft.quickPlayServer");
+        if (quickPlay != null && !quickPlay.trim().isEmpty()) {
+            strList.add("--quickPlayMultiplayer");
+            strList.add(quickPlay.trim());
+        }
         return strList.toArray(new String[0]);
     }
 
