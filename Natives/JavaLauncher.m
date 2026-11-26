@@ -291,6 +291,9 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     margv[++margc] = "-Dorg.lwjgl.system.allocator=system";
     //margv[++margc] = "-Dorg.lwjgl.util.NoChecks=true";
     margv[++margc] = "-Dlog4j2.formatMsgNoLookups=true";
+    // Amethyst bundles Gson 2.13+ on system classpath; Minecraft 1.21.1 mods
+    // (e.g. Radical Cobblemon Trainers / rctmod) expect Gson 2.10 TypeToken behavior.
+    margv[++margc] = "-Dgson.allowCapturingTypeVariables=true";
 
     // Preset OpenGL libname
     const char *glLibName = getenv("RENDERER");
