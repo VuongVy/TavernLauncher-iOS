@@ -23,9 +23,22 @@ jobs:
           java-version: '8'
 
       - name: Install build tools (gmake, cmake, ldid)
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_UPGRADE: "1"
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
         run: |
-          brew update
-          brew install make cmake ldid
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+          ARCH="$(uname -m)"
+          if [ "$ARCH" = "arm64" ]; then
+            LDID_URL="https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus8/ldid_macosx_arm64"
+          else
+            LDID_URL="https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus8/ldid_macosx_x86_64"
+          fi
+          curl -fSL "$LDID_URL" -o /usr/local/bin/ldid
+          chmod +x /usr/local/bin/ldid
+          command -v cmake >/dev/null 2>&1 || brew install cmake
+          command -v gmake >/dev/null 2>&1 || brew install make
           which gmake cmake ldid
           "$JAVA_HOME/bin/javac" -version
           xcrun --sdk iphoneos --show-sdk-path
