@@ -33,7 +33,13 @@ static PLProfiles* current;
 }
 
 + (id)profile:(NSMutableDictionary *)profile resolveKey:(id)key {
-    NSString *value = profile[key];
+    id rawValue = profile[key];
+    NSString *value = nil;
+    if ([rawValue isKindOfClass:NSString.class]) {
+        value = (NSString *)rawValue;
+    } else if ([rawValue isKindOfClass:NSNumber.class]) {
+        value = [(NSNumber *)rawValue stringValue];
+    }
     if (value.length > 0) {
         //NSDebugLog(@"[PLProfiles] Applying %@: \"%@\"", key, value);
         return value;

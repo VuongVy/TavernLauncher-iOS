@@ -151,7 +151,7 @@
         @"name": indexDict[@"name"],
         @"lastVersionId": depInfo[@"id"],
         @"renderer": @ RENDERER_NAME_MOBILEGLUES,
-        @"javaVersion": @(21),
+        @"javaVersion": @"21",
     }.mutableCopy;
     if (iconData) {
         profileDict[@"icon"] = [NSString stringWithFormat:@"data:image/png;base64,%@", [iconData base64EncodedStringWithOptions:0]];
