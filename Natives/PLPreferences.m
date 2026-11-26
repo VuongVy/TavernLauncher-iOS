@@ -20,7 +20,7 @@
         }.mutableCopy,
         @"video": @{ // Video & Audio
             @"renderer": @ RENDERER_NAME_MOBILEGLUES,
-            @"resolution": @(100),
+            @"resolution": @(75),
             @"max_framerate": @YES,
             @"performance_hud": @NO,
             @"fullscreen_airplay": @YES,
@@ -60,7 +60,7 @@
             @"java_args": @"-XX:+UseStringDeduplication",
             @"env_variables": @"",
             @"auto_ram": @YES,
-            @"allocated_memory": [NSNumber numberWithFloat:roundf((NSProcessInfo.processInfo.physicalMemory / 1048576) * 0.35)]
+            @"allocated_memory": [NSNumber numberWithFloat:roundf((NSProcessInfo.processInfo.physicalMemory / 1048576) * 0.30)]
         }.mutableCopy,
         @"internal": @{
             @"isolated": @NO,

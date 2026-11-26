@@ -19,8 +19,12 @@
     // Default settings for performance
     [options setDefaultForKey:@"mipmapLevels" value:@"0"];
     [options setDefaultForKey:@"particles" value:@"1"];
-    [options setDefaultForKey:@"renderDistance" value:@"2"];
-    [options setDefaultForKey:@"simulationDistance" value:@"5"];
+    [options setDefaultForKey:@"renderDistance" value:@"4"];
+    [options setDefaultForKey:@"clouds" value:@"false"];
+    NSString *simDist = [options getValueForKey:@"simulationDistance"];
+    if (simDist == nil || simDist.intValue < 5) {
+        [options setKey:@"simulationDistance" value:@"5"];
+    }
     [options save];
 }
 

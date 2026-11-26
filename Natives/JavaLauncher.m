@@ -230,15 +230,20 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     int allocmem;
     if (getPrefBool(@"java.auto_ram")) {
         int physMB = (int)(NSProcessInfo.processInfo.physicalMemory >> 20);
-        BOOL hasHighMem = getEntitlementValue(@"com.apple.private.memorystatus") ||
-                          getEntitlementValue(@"com.apple.developer.kernel.increased-memory-limit");
-        if (hasHighMem) {
+        BOOL hasMemoryStatus = getEntitlementValue(@"com.apple.private.memorystatus");
+        BOOL hasIncreasedLimit = getEntitlementValue(@"com.apple.developer.kernel.increased-memory-limit");
+        if (hasMemoryStatus) {
             if (physMB >= 7500) allocmem = 3072;
-            else if (physMB >= 5500) allocmem = 2560;
-            else allocmem = 1792;
+            else if (physMB >= 5500) allocmem = 2304;
+            else allocmem = 1536;
+        } else if (hasIncreasedLimit) {
+            // Normal sideload (SideStore/AltStore/iLoader): stay safely below iOS Jetsam ceiling
+            // (~3.2 GB total footprint on 6 GB devices after ~1.1 GB native/GPU/JIT26 overhead).
+            if (physMB >= 7500) allocmem = 2560;
+            else if (physMB >= 5500) allocmem = 1792;
+            else allocmem = 1280;
         } else {
-            CGFloat autoRatio = 0.28;
-            allocmem = MIN(2048, MAX(1280, (int)roundf(physMB * autoRatio)));
+            allocmem = MIN(1536, MAX(1024, (int)roundf(physMB * 0.25)));
         }
         // Gracefully step down if iOS contiguous VA space is tighter than target
         while (allocmem > 1024 && !validateVirtualMemorySpace(allocmem)) {
@@ -269,10 +274,18 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     if (!launchJar) {
         margv[++margc] = "-Djava.system.class.loader=net.kdt.pojavlaunch.PojavClassLoader";
     }
-    int minHeap = (allocmem >= 1536) ? 512 : 256;
+    int minHeap = 256;
     margv[++margc] = [NSString stringWithFormat:@"-Xms%dM", minHeap].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Xmx%dM", allocmem].UTF8String;
+    margv[++margc] = "-XX:+UseG1GC";
     margv[++margc] = "-XX:+UseStringDeduplication";
+    margv[++margc] = "-XX:MaxHeapFreeRatio=30";
+    margv[++margc] = "-XX:MinHeapFreeRatio=10";
+    margv[++margc] = "-XX:G1PeriodicGCInterval=15000";
+    margv[++margc] = "-XX:+G1PeriodicGCInvokesConcurrent";
+    margv[++margc] = "-XX:ReservedCodeCacheSize=160M";
+    margv[++margc] = "-XX:MaxDirectMemorySize=256M";
+    margv[++margc] = "-XX:MaxMetaspaceSize=320M";
     if (!launchJar) {
         NSString *qpServer = getPrefObject(@"general.taverncraft_quickplay_server");
         if (qpServer.length == 0) {
