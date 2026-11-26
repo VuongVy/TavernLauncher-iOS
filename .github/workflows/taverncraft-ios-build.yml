@@ -7,8 +7,8 @@ on:
 
 jobs:
   build-ios:
-    name: Build TavernCraft iOS 2.8.4 (Java 21 + Cobblemon Controls)
-    runs-on: macos-15
+    name: Build TavernCraft iOS (Java 21 + Cobblemon Controls)
+    runs-on: macos-26
 
     steps:
       - name: Checkout TavernLauncher-iOS (with MobileGlues & submodules)
