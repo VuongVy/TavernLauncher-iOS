@@ -90,6 +90,7 @@
         return;
     }
 
+    NSMutableSet<NSString *> *expectedModNames = [NSMutableSet new];
     downloader.progress.totalUnitCount = [indexDict[@"files"] count];
     for (NSDictionary *indexFile in indexDict[@"files"]) {
 /*
@@ -98,18 +99,35 @@
             return;
         }
 */
+        NSString *relPath = indexFile[@"path"];
+        if ([relPath hasPrefix:@"mods/"] && [relPath hasSuffix:@".jar"]) {
+            [expectedModNames addObject:relPath.lastPathComponent];
+        }
         NSString *url = [indexFile[@"downloads"] firstObject];
         NSString *sha = indexFile[@"hashes"][@"sha1"];
-        NSString *path = [destPath stringByAppendingPathComponent:indexFile[@"path"]];
+        NSString *path = [destPath stringByAppendingPathComponent:relPath];
         NSUInteger size = [indexFile[@"fileSize"] unsignedLongLongValue];
         NSURLSessionDownloadTask *task = [downloader createDownloadTask:url size:size sha:sha altName:nil toPath:path];
         if (task) {
-            [downloader.fileList addObject:indexFile[@"path"]];
+            [downloader.fileList addObject:relPath];
             [task resume];
         } else if (!downloader.progress.cancelled) {
             downloader.progress.completedUnitCount++;
         } else {
             return; // cancelled
+        }
+    }
+
+    // Prune stale mods from previous pack versions so updates never leave duplicate mod IDs
+    if (expectedModNames.count > 0) {
+        NSString *modsDir = [destPath stringByAppendingPathComponent:@"mods"];
+        NSArray<NSString *> *existingMods = [NSFileManager.defaultManager contentsOfDirectoryAtPath:modsDir error:nil];
+        for (NSString *fname in existingMods) {
+            if ([fname hasSuffix:@".jar"] && ![expectedModNames containsObject:fname]) {
+                NSString *stalePath = [modsDir stringByAppendingPathComponent:fname];
+                [NSFileManager.defaultManager removeItemAtPath:stalePath error:nil];
+                NSLog(@"[ModrinthAPI] Pruned stale mod: %@", fname);
+            }
         }
     }
 

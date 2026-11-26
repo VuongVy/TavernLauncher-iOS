@@ -16,6 +16,7 @@
             @"check_sha": @YES,
             @"cosmetica": @YES,
             @"debug_logging": @(!CONFIG_RELEASE),
+            @"taverncraft_quickplay_server": @"tavern.rexon-tech.cloud",
         }.mutableCopy,
         @"video": @{ // Video & Audio
             @"renderer": @ RENDERER_NAME_MOBILEGLUES,

@@ -184,6 +184,19 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
         gameDir = @(getenv("GAME_DIR"));
         launchJar = YES;
     }
+
+    // Ensure gameDir and logs/ exist and align process CWD with -Duser.dir.
+    // Java NIO (e.g. Cobblemon Showdown unbundler) and Log4j resolve relative
+    // paths via OS CWD; without chdir(gameDir), ShowdownThread throws
+    // NoSuchFileException on showdown/showdown.zip and deadlocks Render thread.
+    [fm createDirectoryAtPath:[gameDir stringByAppendingPathComponent:@"logs"]
+        withIntermediateDirectories:YES attributes:nil error:nil];
+    if (![fm changeCurrentDirectoryPath:gameDir]) {
+        NSLog(@"[JavaLauncher] Warning: failed to chdir to %@", gameDir);
+    } else {
+        NSLog(@"[JavaLauncher] Working directory set to %@", gameDir);
+    }
+
     NSLog(@"[JavaLauncher] Looking for Java %d or later", minVersion);
     NSString *javaHome = getSelectedJavaHome(defaultJRETag, minVersion);
 

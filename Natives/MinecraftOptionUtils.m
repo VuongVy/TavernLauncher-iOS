@@ -49,8 +49,8 @@
         return;
     }
 
-    self.lineList = [contents componentsSeparatedByCharactersInSet:
-                                  [NSCharacterSet newlineCharacterSet]];
+    self.lineList = [[contents componentsSeparatedByCharactersInSet:
+                                  [NSCharacterSet newlineCharacterSet]] mutableCopy];
 }
 
 - (void)ensureLoaded {

@@ -325,7 +325,7 @@ static NSString *const kTavernServerAddr = @"tavern.rexon-tech.cloud";
         [self.primaryButton setTitle:@"INSTALL" forState:UIControlStateNormal];
         self.primaryButton.backgroundColor = [UIColor colorWithRed:56/255.0 green:193/255.0 blue:114/255.0 alpha:1.0];
         self.primaryButton.enabled = YES;
-        self.statusLabel.text = @"Chạm INSTALL để tự tải Cobbleverse Mobile Lite (67 mods)";
+        self.statusLabel.text = @"Chạm INSTALL để tự tải Cobbleverse Mobile Lite (75 mods)";
     }
 }
 
