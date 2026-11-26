@@ -19,7 +19,7 @@ jobs:
       - name: Setup JDK 8 (BOOTJDK for Pojav JavaApp bridge)
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: zulu
           java-version: '8'
 
       - name: Install build tools (gmake, cmake, ldid)
