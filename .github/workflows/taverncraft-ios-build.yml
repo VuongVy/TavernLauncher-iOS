@@ -8,7 +8,7 @@ on:
 jobs:
   build-ios:
     name: Build TavernCraft iOS (Java 21 + Cobblemon Controls)
-    runs-on: macos-26
+    runs-on: macos-15-intel
 
     steps:
       - name: Checkout TavernLauncher-iOS (with MobileGlues & submodules)
@@ -35,7 +35,7 @@ jobs:
           TAVERN_JRE21_ONLY: "1"
           RELEASE: "1"
         run: |
-          export PATH="/opt/homebrew/bin:$PATH"
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
           export BOOTJDK="$JAVA_HOME/bin"
           gmake -j$(sysctl -n hw.ncpu) package PLATFORM=2 BOOTJDK="$BOOTJDK" RELEASE=1 TAVERN_JRE21_ONLY=1
           gmake -j$(sysctl -n hw.ncpu) package PLATFORM=2 BOOTJDK="$BOOTJDK" RELEASE=1 TAVERN_JRE21_ONLY=1 TROLLSTORE_JIT_ENT=1
